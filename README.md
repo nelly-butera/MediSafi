@@ -260,7 +260,7 @@ medguard/
 - Nginx for load balancing
 - Linux servers (Ubuntu/Debian)
 
-## Challenges & Solutions
+## Challenges Encountered and Solutions employed
 
 ### Challenge 1: OpenFDA API Response Format
 - **Problem**: OpenFDA returns complex nested JSON with inconsistent field availability.
