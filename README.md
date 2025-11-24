@@ -263,20 +263,20 @@ medguard/
 ## Challenges & Solutions
 
 ### Challenge 1: OpenFDA API Response Format
-**Problem**: OpenFDA returns complex nested JSON with inconsistent field availability.
-**Solution**: Implemented comprehensive data extraction functions with fallbacks for missing fields.
+- **Problem**: OpenFDA returns complex nested JSON with inconsistent field availability.
+- **Solution**: Implemented comprehensive data extraction functions with fallbacks for missing fields.
 
 ### Challenge 2: Rate Limiting
-**Problem**: OpenFDA has rate limits (40 requests/minute without API key).
-**Solution**: Implemented backend caching and request throttling to stay within limits.
+- **Problem**: OpenFDA has rate limits (40 requests/minute without API key).
+- **Solution**: Implemented backend caching and request throttling to stay within limits.
 
 ### Challenge 3: Load Balancer Configuration
-**Problem**: Ensuring proper session persistence and failover.
-**Solution**: Used Nginx's `least_conn` algorithm and health checks for optimal distribution.
+- **Problem**: Ensuring proper session persistence and failover.
+- **Solution**: Used Nginx's `least_conn` algorithm and health checks for optimal distribution.
 
 ### Challenge 4: Large Response Sizes
-**Problem**: Some drug labels contain massive amounts of data.
-**Solution**: Implemented pagination and data truncation on frontend.
+- **Problem**: Some drug labels contain massive amounts of data.
+- **Solution**: Implemented pagination and data truncation on frontend.
 
 ## Security Measures
 
@@ -294,21 +294,7 @@ medguard/
   - License: Public Domain
 - **Data Source**: FDA Structured Product Labeling (SPL)
 
-## Future Enhancements (Bonus Features)
-
-1. **User Authentication**: Allow users to save favorite medications
-2. **Advanced Filtering**: Filter by manufacturer, approval date, drug class
-3. **Comparison Tool**: Compare multiple medications side-by-side
-4. **Dosage Calculator**: Interactive dosage calculator based on patient factors
-5. **Drug Interaction Checker**: Check for potential drug interactions
-6. **Containerization**: Docker containers for easier deployment
-7. **CI/CD Pipeline**: Automated testing and deployment
-8. **Analytics Dashboard**: Track popular searches and usage patterns
 
 ## License
 
-This project is for educational purposes as part of a university assignment.
-
-## Contact
-
-For questions or issues, please contact [Your Name] at [Your Email]
+This project is totally free and up for grabs!!
