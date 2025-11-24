@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="MedGuard - Quick, accurate medication information for safer health choices">
+    <title>MedGuard - Drug Information Lookup</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                    <rect x="15" y="5" width="10" height="30" rx="2" fill="#2563eb"/>
+                    <rect x="5" y="15" width="30" height="10" rx="2" fill="#2563eb"/>
+                    <circle cx="20" cy="20" r="3" fill="white"/>
+                </svg>
+                <h1>MedGuard</h1>
+            </div>
+            <p class="tagline">Empowering safe medication decisions</p>
+        </header>
+
+        <!-- Search Section -->
+        <section class="search-section">
+            <div class="search-container">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    class="search-input" 
+                    placeholder="Search for a medication (e.g., Aspirin, Ibuprofen, Metformin)..."
+                    autocomplete="off"
+                >
+                <button id="searchBtn" class="search-btn">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+                    </svg>
+                    Search
+                </button>
+            </div>
+            <div id="autocompleteList" class="autocomplete-list hidden"></div>
+        </section>
+
+        <!-- Filters and Sort -->
+        <section id="filtersSection" class="filters-section hidden">
+            <div class="filters-container">
+                <div class="filter-group">
+                    <label for="typeFilter">Type:</label>
+                    <select id="typeFilter" class="filter-select">
+                        <option value="all">All Types</option>
+                        <option value="HUMAN PRESCRIPTION DRUG">Prescription</option>
+                        <option value="HUMAN OTC DRUG">Over-the-Counter</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="sortSelect">Sort by:</label>
+                    <select id="sortSelect" class="filter-select">
+                        <option value="name-asc">Name (A-Z)</option>
+                        <option value="name-desc">Name (Z-A)</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <span class="results-count" id="resultsCount">0 results</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="loading-indicator hidden">
+            <div class="spinner"></div>
+            <p>Searching medication database...</p>
+        </div>
+
+        <!-- Error Message -->
+        <div id="errorMessage" class="error-message hidden"></div>
+
+        <!-- Results Section -->
+        <section id="resultsSection" class="results-section hidden">
+            <h2>Search Results</h2>
+            <div id="resultsContainer" class="results-container"></div>
+        </section>
+
+        <!-- Drug Detail Modal -->
+        <div id="drugModal" class="modal hidden">
+            <div class="modal-content">
+                <button class="modal-close" id="modalClose">&times;</button>
+                <div id="drugDetail" class="drug-detail"></div>
+            </div>
+        </div>
+
+        <!-- Recent Searches -->
+        <section id="recentSearches" class="recent-searches hidden">
+            <h3>Recent Searches</h3>
+            <div id="recentSearchesList" class="recent-searches-list"></div>
+        </section>
+
+        <!-- Info Section -->
+        <section class="info-section">
+            <div class="info-card">
+                <h3>About MedGuard</h3>
+                <p>MedGuard provides quick access to FDA-approved medication information, helping you make informed decisions about your health and medications.</p>
+            </div>
+            <div class="info-card">
+                <h3>Important Notice</h3>
+                <p>This information is for educational purposes only. Always consult your healthcare provider before starting, stopping, or changing any medication.</p>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Data provided by <a href="https://open.fda.gov" target="_blank" rel="noopener">openFDA</a></p>
+            <p>MedGuard &copy; 2025 - Educational Project</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
