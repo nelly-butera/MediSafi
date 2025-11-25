@@ -1,8 +1,7 @@
 // Configuration
-const API_BASE_URL = window.location.hostname === 'localhost' 
+const API_BASE_URL = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:3000/api'
-    : '/api'; // When deployed through load balancer
-
+    : '/api';
 // State management
 let currentResults = [];
 let recentSearches = [];
@@ -174,9 +173,10 @@ async function performSearch() {
     
     showLoading();
     hideElement(autocompleteList);
+    let response;
     
     try {
-        const response = await fetch(`${API_BASE_URL}/search?query=${encodeURIComponent(query)}&limit=20`);
+        response = await fetch(`${API_BASE_URL}/search?query=${encodeURIComponent(query)}&limit=20`);
         
         errorData = await response.json();
         if (!response.ok) {

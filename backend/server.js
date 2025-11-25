@@ -93,7 +93,8 @@ app.get('/api/search', async (req, res) => {
     // Call OpenFDA API
     const searchUrl = `${OPENFDA_BASE_URL}/drug/label.json`;
     const params = {
-      search: `openfda.brand_name:"${sanitizedQuery}" OR openfda.generic_name:"${sanitizedQuery}"`,
+      // New (Use Wildcard for better results):
+      search: `openfda.brand_name:${sanitizedQuery}* OR openfda.generic_name:${sanitizedQuery}*`,
       limit: Math.min(parseInt(limit), 20) // Cap at 20
     };
 
