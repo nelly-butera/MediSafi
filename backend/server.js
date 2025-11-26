@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 app.use(helmet());
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['http://localhost:8080', 'http://your-lb-ip']
+    ? ['http://localhost:8080', 'http://3.87.160.166']
     : '*'
 }));
 app.use(express.json());
@@ -34,28 +34,30 @@ const OPENFDA_BASE_URL = 'https://api.fda.gov';
 
 // Helper function to extract drug data
 function extractDrugData(result) {
-  const openfda = result.openfda || {};
-  const indications = result.indications_and_usage ? result.indications_and_usage[0] : '';
-  const warnings = result.warnings ? result.warnings[0] : '';
-  const dosage = result.dosage_and_administration ? result.dosage_and_administration[0] : '';
-  const adverseReactions = result.adverse_reactions ? result.adverse_reactions[0] : '';
-  
-  return {
-    id: result.id || result.spl_id?.[0] || 'N/A',
-    brandName: openfda.brand_name?.[0] || 'N/A',
-    genericName: openfda.generic_name?.[0] || 'N/A',
-    manufacturer: openfda.manufacturer_name?.[0] || 'N/A',
-    productType: openfda.product_type?.[0] || 'N/A',
-    route: openfda.route?.[0] || 'N/A',
-    substanceName: openfda.substance_name?.[0] || 'N/A',
-    purpose: result.purpose ? result.purpose[0].substring(0, 500) : 'N/A',
-    indications: indications.substring(0, 1000),
-    warnings: warnings.substring(0, 1000),
-    dosage: dosage.substring(0, 1000),
-    adverseReactions: adverseReactions.substring(0, 500),
-    activeIngredients: result.active_ingredient ? result.active_ingredient[0] : 'N/A',
-    pharmacologicClass: openfda.pharm_class_epc?.[0] || 'N/A',
-  };
+  const openfda = result.openfda || {};
+  const indications = result.indications_and_usage ? result.indications_and_usage[0] : '';
+  const warnings = result.warnings ? result.warnings[0] : '';
+  const dosage = result.dosage_and_administration ? result.dosage_and_administration[0] : '';
+  const adverseReactions = result.adverse_reactions ? result.adverse_reactions[0] : '';
+  
+  return {
+    // === FIXES APPLIED HERE ===
+    id: result.id || (result.spl_id && result.spl_id.length > 0 ? result.spl_id[0] : 'N/A'),
+    brandName: openfda.brand_name && openfda.brand_name.length > 0 ? openfda.brand_name[0] : 'N/A',
+    genericName: openfda.generic_name && openfda.generic_name.length > 0 ? openfda.generic_name[0] : 'N/A',
+    manufacturer: openfda.manufacturer_name && openfda.manufacturer_name.length > 0 ? openfda.manufacturer_name[0] : 'N/A',
+    productType: openfda.product_type && openfda.product_type.length > 0 ? openfda.product_type[0] : 'N/A',
+    route: openfda.route && openfda.route.length > 0 ? openfda.route[0] : 'N/A',
+    substanceName: openfda.substance_name && openfda.substance_name.length > 0 ? openfda.substance_name[0] : 'N/A',
+    // Rest of the properties were already correctly using ternary checks:
+    purpose: result.purpose ? result.purpose[0].substring(0, 500) : 'N/A',
+    indications: indications.substring(0, 1000),
+    warnings: warnings.substring(0, 1000),
+    dosage: dosage.substring(0, 1000),
+    adverseReactions: adverseReactions.substring(0, 500),
+    activeIngredients: result.active_ingredient ? result.active_ingredient[0] : 'N/A',
+    pharmacologicClass: openfda.pharm_class_epc && openfda.pharm_class_epc.length > 0 ? openfda.pharm_class_epc[0] : 'N/A',
+  };
 }
 
 // Health check endpoint
@@ -243,10 +245,11 @@ app.get('/api/autocomplete', async (req, res) => {
       timeout: 5000
     });
 
+    
     const suggestions = response.data.results
       ? response.data.results.map(r => ({
-          brandName: r.openfda?.brand_name?.[0],
-          genericName: r.openfda?.generic_name?.[0]
+          brandName: r.openfda && r.openfda.brand_name && r.openfda.brand_name.length > 0 ? r.openfda.brand_name[0] : undefined,
+          genericName: r.openfda && r.openfda.generic_name && r.openfda.generic_name.length > 0 ? r.openfda.generic_name[0] : undefined
         }))
       : [];
 
