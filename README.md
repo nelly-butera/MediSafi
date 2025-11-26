@@ -1,300 +1,188 @@
-# MedGuard - Drug Information Lookup Application
+# MedSafi - Medication Information Lookup
+
+A web application that provides easy access to FDA adverse event data, helping users make informed decisions about medications. Built with vanilla JavaScript and Node.js, deployed with load balancing.
+
+## What It Does
+
+MedSafi lets you search for any medication and see real-world data from the FDA's adverse event database. You can view:
+- Common uses and indications
+- Reported adverse reactions with statistics
+- Total number of reports filed
+- Percentage breakdowns of side effects
+
+All data comes directly from the FDA's public API spanning from 2004 to present.
+
+## Quick Start
+
+### Running Locally
+
+1. **Clone the repo**
+```bash
+git clone <your-repo-url>
+cd medsafi
+```
+
+2. **Start the backend** (optional - app works without it)
+```bash
+cd backend
+npm install
+node server.js
+```
+
+3. **Open the app**
+Simply open `index.html` in your browser. That's it! The app connects directly to the FDA API, so no backend is needed for basic functionality.
+
+Try searching for: paracetamol, ibuprofen, aspirin, metformin, or lipitor.
+
+## Features
+
+- **Fast autocomplete** - Suggestions appear as you type with report counts
+- **Real FDA data** - All information comes from actual adverse event reports
+- **Detailed statistics** - See how many people reported each side effect
+- **Clean interface** - Easy to read, mobile-friendly design
+- **Recent searches** - Keeps track of your last 5 searches
+- **No login required** - Just search and go
+
+## How I Built It
+
+### Tech Stack
+- Frontend: HTML, CSS, vanilla JavaScript
+- Backend: Node.js + Express (for deployment)
+- API: FDA Adverse Event Reporting System (openFDA)
+- Deployment: Nginx load balancer with PM2
+
+### Why These Choices?
+I went with vanilla JavaScript instead of a framework because the app is fairly straightforward and I wanted to keep it lightweight. The FDA API is public and doesn't require authentication, which makes it perfect for this use case. For deployment, I used PM2 to keep the backend running and Nginx to balance traffic between servers.
+
+### API Integration
+The app uses two main FDA endpoints:
+1. `drug/event.json?count=patient.drug.medicinalproduct.exact` - For autocomplete
+2. `drug/event.json?count=patient.drug.drugindication.exact` - For indications
+3. `drug/event.json?count=patient.reaction.reactionmeddrapt.exact` - For reactions
+
+I chose these endpoints because they return aggregated data quickly. The full event reports were too slow and contained more detail than needed for a quick lookup tool.
+
+## Deployment Instructions
+
+I deployed this on three servers: two web servers (Web01, Web02) and one load balancer (Lb01).
+
+### Step 1: Deploy Backend to Web Servers
+
+On both Web01 and Web02:
+
+```bash
+# Upload files
+scp -r backend/ user@web01:/var/www/medsafi/backend/
+
+# SSH into server
+ssh user@web01
+
+# Install dependencies and start with PM2
+cd /var/www/medsafi/backend
+npm install
+pm2 start server.js --name medsafi
+pm2 save
+pm2 startup
+```
+
+### Step 2: Configure Load Balancer
+
+On Lb01:
+
+```bash
+# Upload frontend files
+scp -r index.html style.css app.js user@lb01:/var/www/medsafi/
+
+# Create Nginx config
+sudo nano /etc/nginx/sites-available/medsafi
+```
+
+Add this configuration:
+
+```nginx
+upstream medsafi_backend {
+    least_conn;
+    server WEB01_IP:3000;
+    server WEB02_IP:3000;
+}
+
+server {
+    listen 80;
+    server_name your_domain_or_ip;
+
+    location / {
+        root /var/www/medsafi;
+        index index.html;
+        try_files $uri $uri/ /index.html;
+    }
+
+    location /api/ {
+        proxy_pass http://medsafi_backend;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}
+```
+
+```bash
+# Enable and restart
+sudo ln -s /etc/nginx/sites-available/medsafi /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
+```
+
+### Step 3: Testing
+
+```bash
+# Test load balancer health
+curl http://your_lb_ip/
+
+# Test API routing
+curl http://your_lb_ip/api/health
+
+# Check both servers are receiving requests
+pm2 logs medsafi  # Run on both web servers
+```
+
+## Challenges I Ran Into
+
+**Slow loading times** - Initially I was fetching full adverse event reports (100 records each) which took 5-8 seconds. Switched to using count endpoints instead which reduced load time to under 2 seconds.
+
+**Autocomplete performance** - First version fetched full event data for autocomplete, causing 3-4 second delays. Fixed by using the count API endpoint which only returns drug names and counts.
+
+**Missing drug data** - Some common drugs weren't in the label database. Solved by switching entirely to the adverse events database which has much better coverage.
+
+**CORS issues** - The FDA API allows direct browser requests so no proxy needed, but I set up an optional backend for future rate limiting.
+
+## API Credits
+
+- **Data Source**: [openFDA Drug Adverse Events API](https://open.fda.gov/apis/drug/event/)
+- **Provider**: U.S. Food and Drug Administration
+- **License**: Public domain, no API key required
+- **Data Range**: 2004 - Present
 
 ## Project Structure
 
 ```
-medguard/
+medsafi/
+├── index.html          # Main page with navbar and sections
+├── style.css           # Styling and responsive design
+├── app.js              # Frontend logic and API calls
 ├── backend/
-│   ├── server.js
-│   ├── .env
-│   ├── package.json
-│   └── .gitignore
-├── frontend/
-│   ├── index.html
-│   ├── css/
-│   │   └── style.css
-│   └── js/
-│       └── app.js
+│   ├── server.js       # Express server (optional)
+│   └── package.json    # Node dependencies
 └── README.md
 ```
 
-## Setup Instructions
+## Future Improvements
 
-### Prerequisites
-- Node.js (v14 or higher)
-- npm or yarn
-- OpenFDA API (no key required for basic usage)
-
-### Backend Setup
-
-1. **Navigate to backend directory:**
-   ```bash
-   cd backend
-   ```
-
-2. **Install dependencies:**
-   ```bash
-   npm install express cors dotenv axios helmet express-rate-limit
-   ```
-
-3. **Create .env file:**
-   ```
-   PORT=3000
-   NODE_ENV=development
-   ```
-
-4. **Run the server:**
-   ```bash
-   node server.js
-   ```
-
-### Frontend Setup
-
-1. **Open `frontend/index.html` in a web browser**, or
-2. **Use a simple HTTP server:**
-   ```bash
-   cd frontend
-   npx http-server -p 8080
-   ```
-
-### Deployment to Web Servers
-
-#### Step 1: Prepare Application for Production
-
-1. Update backend `.env`:
-   ```
-   PORT=3000
-   NODE_ENV=production
-   ```
-
-2. Install PM2 for process management:
-   ```bash
-   npm install -g pm2
-   ```
-
-#### Step 2: Deploy to Web01 and Web02
-
-**On both Web01 and Web02:**
-
-1. **Upload files to server:**
-   ```bash
-   scp -r medguard/ user@web01:/var/www/medguard/
-   scp -r medguard/ user@web02:/var/www/medguard/
-   ```
-
-2. **SSH into each server:**
-   ```bash
-   ssh user@web01
-   ```
-
-3. **Install dependencies:**
-   ```bash
-   cd /var/www/medguard/backend
-   npm install --production
-   ```
-
-4. **Start application with PM2:**
-   ```bash
-   pm2 start server.js --name medguard
-   pm2 save
-   pm2 startup
-   ```
-
-5. **Verify it's running:**
-   ```bash
-   curl http://localhost:3000/api/health
-   ```
-
-#### Step 3: Configure Load Balancer (Lb01)
-
-**On Lb01 server:**
-
-1. **Install Nginx (if not installed):**
-   ```bash
-   sudo apt update
-   sudo apt install nginx
-   ```
-
-2. **Create Nginx configuration:**
-   ```bash
-   sudo nano /etc/nginx/sites-available/medguard
-   ```
-
-3. **Add this configuration:**
-   ```nginx
-   upstream medguard_backend {
-       least_conn;
-       server <WEB01_IP>:3000 weight=1 max_fails=3 fail_timeout=30s;
-       server <WEB02_IP>:3000 weight=1 max_fails=3 fail_timeout=30s;
-   }
-
-   server {
-       listen 80;
-       server_name <YOUR_DOMAIN_OR_IP>;
-
-       # Frontend files
-       location / {
-           root /var/www/medguard/frontend;
-           index index.html;
-           try_files $uri $uri/ /index.html;
-       }
-
-       # Backend API proxy
-       location /api/ {
-           proxy_pass http://medguard_backend;
-           proxy_http_version 1.1;
-           proxy_set_header Upgrade $http_upgrade;
-           proxy_set_header Connection 'upgrade';
-           proxy_set_header Host $host;
-           proxy_set_header X-Real-IP $remote_addr;
-           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-           proxy_cache_bypass $http_upgrade;
-           
-           # Timeout settings
-           proxy_connect_timeout 60s;
-           proxy_send_timeout 60s;
-           proxy_read_timeout 60s;
-       }
-
-       # Health check endpoint
-       location /health {
-           access_log off;
-           return 200 "healthy\n";
-           add_header Content-Type text/plain;
-       }
-   }
-   ```
-
-4. **Enable the site:**
-   ```bash
-   sudo ln -s /etc/nginx/sites-available/medguard /etc/nginx/sites-enabled/
-   sudo nginx -t
-   sudo systemctl restart nginx
-   ```
-
-5. **Upload frontend files to Lb01:**
-   ```bash
-   scp -r medguard/frontend/ user@lb01:/var/www/medguard/
-   ```
-
-#### Step 4: Testing Load Balancer
-
-1. **Test health check:**
-   ```bash
-   curl http://<LB01_IP>/health
-   ```
-
-2. **Test API through load balancer:**
-   ```bash
-   curl http://<LB01_IP>/api/health
-   ```
-
-3. **Test load balancing:**
-   ```bash
-   for i in {1..10}; do curl http://<LB01_IP>/api/health; done
-   ```
-
-4. **Monitor which server handles requests:**
-   - Check logs on Web01: `pm2 logs medguard`
-   - Check logs on Web02: `pm2 logs medguard`
-   - Both should show incoming requests
-
-#### Step 5: Verify Load Distribution
-
-1. **Stop one server to test failover:**
-   ```bash
-   # On Web01
-   pm2 stop medguard
-   ```
-
-2. **Access application - should still work via Web02**
-
-3. **Restart Web01:**
-   ```bash
-   pm2 start medguard
-   ```
-
-## Features
-
-- **Drug Search**: Search for medications by name
-- **Detailed Information**: View comprehensive drug information including:
-  - Purpose and uses
-  - Warnings and precautions
-  - Dosage and administration
-  - Active ingredients
-  - Adverse reactions
-  - Manufacturer information
-- **Search History**: Track recent searches
-- **Filtering & Sorting**: Filter results by drug type, sort by name
-- **Responsive Design**: Works on desktop and mobile devices
-- **Error Handling**: Graceful handling of API errors and network issues
-- **Rate Limiting**: Backend protection against excessive requests
-
-## API Endpoints
-
-### Backend API
-
-- `GET /api/health` - Health check endpoint
-- `GET /api/search?query=<drug_name>&limit=<number>` - Search for drugs
-- `GET /api/drug/:id` - Get detailed drug information
-
-## Technologies Used
-
-### Frontend
-- HTML5
-- CSS3 (Responsive Design)
-- Vanilla JavaScript (ES6+)
-- Fetch API for HTTP requests
-
-### Backend
-- Node.js
-- Express.js
-- Axios for API calls
-- CORS for cross-origin requests
-- Helmet for security headers
-- Express-rate-limit for rate limiting
-- dotenv for environment variables
-
-### Deployment
-- PM2 for process management
-- Nginx for load balancing
-- Linux servers (Ubuntu/Debian)
-
-## Challenges Encountered and Solutions employed
-
-### Challenge 1: OpenFDA API Response Format
-- **Problem**: OpenFDA returns complex nested JSON with inconsistent field availability.
-- **Solution**: Implemented comprehensive data extraction functions with fallbacks for missing fields.
-
-### Challenge 2: Rate Limiting
-- **Problem**: OpenFDA has rate limits (40 requests/minute without API key).
-- **Solution**: Implemented backend caching and request throttling to stay within limits.
-
-### Challenge 3: Load Balancer Configuration
-- **Problem**: Ensuring proper session persistence and failover.
-- **Solution**: Used Nginx's `least_conn` algorithm and health checks for optimal distribution.
-
-### Challenge 4: Large Response Sizes
-- **Problem**: Some drug labels contain massive amounts of data.
-- **Solution**: Implemented pagination and data truncation on frontend.
-
-## Security Measures
-
-1. **Helmet.js**: Adds security headers
-2. **Rate Limiting**: Prevents API abuse
-3. **Input Validation**: Sanitizes user input
-4. **CORS**: Configured for specific origins in production
-5. **Environment Variables**: Sensitive data stored in .env
-6. **No API Key Required**: OpenFDA is public (include note about optional key for higher limits)
-
-## Credits
-
-- **OpenFDA API**: https://open.fda.gov/
-  - Provider: U.S. Food and Drug Administration
-  - License: Public Domain
-- **Data Source**: FDA Structured Product Labeling (SPL)
+If I had more time, I'd add:
+- Drug comparison feature (compare side effects of similar drugs)
+- Data visualization charts for adverse reactions
+- Export results to PDF
+- User accounts to save favorite searches
+- More detailed filtering options
 
 
-## License
-
-This project is totally free and up for grabs!!
+**Demo Video**: [to be added]  
+**Live Site**: [url site]
