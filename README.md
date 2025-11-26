@@ -165,12 +165,17 @@ pm2 logs medsafi  # Run on both web servers
 
 ```
 medsafi/
-├── index.html          # Main page with navbar and sections
-├── style.css           # Styling and responsive design
-├── app.js              # Frontend logic and API calls
 ├── backend/
-│   ├── server.js       # Express server (optional)
-│   └── package.json    # Node dependencies
+│   ├── server.js
+│   ├── .env
+│   ├── package.json
+│   └── .gitignore
+├── frontend/
+│   ├── index.html
+│   ├── css/
+│   │   └── style.css
+│   └── js/
+│       └── app.js
 └── README.md
 ```
 
