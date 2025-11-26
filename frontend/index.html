@@ -3,104 +3,217 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="MedGuard - Quick, accurate medication information for safer health choices">
-    <title>MedSafi - Drug Information Lookup for Everyday Use</title>
+    <meta name="description" content="MedSafi - Quick, accurate medication information for safer health choices">
+    <title>MedSafi - Drug Information Lookup</title>
     <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <div class="logo">
-                <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-                    <rect x="15" y="5" width="10" height="30" rx="2" fill="#2563eb"/>
-                    <rect x="5" y="15" width="30" height="10" rx="2" fill="#2563eb"/>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
+                    <rect x="15" y="5" width="10" height="30" rx="2" fill="#4f46e5"/>
+                    <rect x="5" y="15" width="30" height="10" rx="2" fill="#4f46e5"/>
                     <circle cx="20" cy="20" r="3" fill="white"/>
                 </svg>
-                <h1>MedGuard</h1>
+                <span>MedSafi</span>
             </div>
-            <p class="tagline">Empowering safe medication decisions</p>
-        </header>
-
-        <!-- Search Section -->
-        <section class="search-section">
-            <div class="search-container">
-                <input 
-                    type="text" 
-                    id="searchInput" 
-                    class="search-input" 
-                    placeholder="Search for a medication (e.g., Aspirin, Ibuprofen, Metformin)..."
-                    autocomplete="off"
-                >
-                <button id="searchBtn" class="search-btn">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
-                    </svg>
-                    Search
-                </button>
-            </div>
-            <div id="autocompleteList" class="autocomplete-list hidden"></div>
-        </section>
-
-        <!-- Filters and Sort -->
-        <section id="filtersSection" class="filters-section hidden">
-            <div class="filters-container">
-                <div class="filter-group">
-                    <label for="typeFilter">Type:</label>
-                    <select id="typeFilter" class="filter-select">
-                        <option value="all">All Types</option>
-                        <option value="HUMAN PRESCRIPTION DRUG">Prescription</option>
-                        <option value="HUMAN OTC DRUG">Over-the-Counter</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label for="sortSelect">Sort by:</label>
-                    <select id="sortSelect" class="filter-select">
-                        <option value="name-asc">Name (A-Z)</option>
-                        <option value="name-desc">Name (Z-A)</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <span class="results-count" id="resultsCount">0 results</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- Loading Indicator -->
-        <div id="loadingIndicator" class="loading-indicator hidden">
-            <div class="spinner"></div>
-            <p>Searching medication database...</p>
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link active">Home</a></li>
+                <li><a href="#about" class="nav-link">About</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+            </ul>
+            <button class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
         </div>
+    </nav>
 
-        <!-- Error Message -->
-        <div id="errorMessage" class="error-message hidden"></div>
+    <div class="main-wrapper">
+        <!-- Home Section -->
+        <section id="home" class="section-home">
+            <div class="container">
+                <!-- Header -->
+                <header class="header">
+                    <h1>Find Your Medicine Information</h1>
+                    <p class="tagline">Quick access to FDA-reported drug data and adverse events</p>
+                </header>
 
-        <!-- Results Section -->
-        <section id="resultsSection" class="results-section hidden">
-            <h2>Search Results</h2>
-            <div id="resultsContainer" class="results-container"></div>
-        </section>
+                <!-- Search Section -->
+                <section class="search-section">
+                    <div class="search-container">
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            class="search-input" 
+                            placeholder="Search for a medication (e.g., Aspirin, Ibuprofen, Metformin)..."
+                            autocomplete="off"
+                        >
+                        <button id="searchBtn" class="search-btn">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+                            </svg>
+                            Search
+                        </button>
+                    </div>
+                    <div id="autocompleteList" class="autocomplete-list hidden"></div>
+                </section>
 
-        <!-- Drug Detail Modal -->
-        <div id="drugModal" class="modal hidden">
-            <div class="modal-content">
-                <button class="modal-close" id="modalClose">&times;</button>
-                <div id="drugDetail" class="drug-detail"></div>
+                <!-- Filters and Sort -->
+                <section id="filtersSection" class="filters-section hidden">
+                    <div class="filters-container">
+                        <div class="filter-group">
+                            <label for="typeFilter">Type:</label>
+                            <select id="typeFilter" class="filter-select">
+                                <option value="all">All Types</option>
+                                <option value="HUMAN PRESCRIPTION DRUG">Prescription</option>
+                                <option value="HUMAN OTC DRUG">Over-the-Counter</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="sortSelect">Sort by:</label>
+                            <select id="sortSelect" class="filter-select">
+                                <option value="name-asc">Name (A-Z)</option>
+                                <option value="name-desc">Name (Z-A)</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <span class="results-count" id="resultsCount">0 results</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Loading Indicator -->
+                <div id="loadingIndicator" class="loading-indicator hidden">
+                    <div class="spinner"></div>
+                    <p>Searching medication database...</p>
+                </div>
+
+                <!-- Error Message -->
+                <div id="errorMessage" class="error-message hidden"></div>
+
+                <!-- Results Section -->
+                <section id="resultsSection" class="results-section hidden">
+                    <h2>Search Results</h2>
+                    <div id="resultsContainer" class="results-container"></div>
+                </section>
+
+                <!-- Recent Searches -->
+                <section id="recentSearches" class="recent-searches hidden">
+                    <h3>Recent Searches</h3>
+                    <div id="recentSearchesList" class="recent-searches-list"></div>
+                </section>
             </div>
-        </div>
-
-        <!-- Recent Searches -->
-        <section id="recentSearches" class="recent-searches hidden">
-            <h3>Recent Searches</h3>
-            <div id="recentSearchesList" class="recent-searches-list"></div>
         </section>
 
-        <!-- Footer -->
-        <footer class="footer">
-            <p>Data provided by <a href="https://open.fda.gov" target="_blank" rel="noopener">openFDA</a></p>
-            <p>MedSafi &copy; 2025 - Educational Project</p>
-        </footer>
+        <!-- About Section -->
+        <section id="about" class="section-about">
+            <div class="container">
+                <div class="about-content">
+                    <h2>About MedSafi</h2>
+                    <div class="about-grid">
+                        <div class="about-card">
+                            <div class="about-icon">📊</div>
+                            <h3>Real FDA Data</h3>
+                            <p>Access millions of adverse event reports from the FDA's database spanning from 2004 to present. All data comes directly from official sources.</p>
+                        </div>
+                        <div class="about-card">
+                            <div class="about-icon">🔍</div>
+                            <h3>Easy to Search</h3>
+                            <p>Simply type a medication name and get instant access to reported uses, common adverse reactions, and detailed statistics.</p>
+                        </div>
+                        <div class="about-card">
+                            <div class="about-icon">💡</div>
+                            <h3>Educational Purpose</h3>
+                            <p>MedSafi is designed for educational purposes to help people understand medication information better. Always consult healthcare professionals.</p>
+                        </div>
+                    </div>
+
+                    <div class="disclaimer-box">
+                        <h3>Important Disclaimer</h3>
+                        <p>This tool provides information from the FDA Adverse Event Reporting System (FAERS). The data represents voluntary reports and does not establish causation between medications and adverse events. This information should not replace professional medical advice, diagnosis, or treatment.</p>
+                        <p><strong>Always consult with your healthcare provider</strong> before making any decisions about your medications or health.</p>
+                    </div>
+
+                    <div class="tech-info">
+                        <h3>Data Sources</h3>
+                        <ul>
+                            <li><strong>openFDA API:</strong> Official FDA adverse event reports</li>
+                            <li><strong>Coverage:</strong> Reports from 2004 to present</li>
+                            <li><strong>Update Frequency:</strong> Data is updated regularly by the FDA</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="section-contact">
+            <div class="container">
+                <div class="contact-content">
+                    <h2>Get in Touch</h2>
+                    <p>Have questions or feedback about MedSafi? We'd love to hear from you.</p>
+                    <div class="contact-methods">
+                        <div class="contact-item">
+                            <span class="contact-icon">📧</span>
+                            <div>
+                                <h4>Email</h4>
+                                <p><a href="nellybutera004@gmail.com">nellybutera004@gmail.com</a></p>
+                            </div>
+                        </div>
+                        <div class="contact-item">
+                            <span class="contact-icon">🐙</span>
+                            <div>
+                                <h4>GitHub</h4>
+                                <p> <a href="https://github.com/nelly-butera/MediSafi">https://github.com/nelly-butera/MediSafi</a></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
+
+    <!-- Drug Detail Modal -->
+    <div id="drugModal" class="modal hidden">
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose">&times;</button>
+            <div id="drugDetail" class="drug-detail"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>MedSafi</h4>
+                    <p>Educational medication information tool</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Resources</h4>
+                    <ul>
+                        <li><a href="https://open.fda.gov" target="_blank">openFDA</a></li>
+                        <li><a href="https://www.fda.gov/drugs" target="_blank">FDA Drugs</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="#privacy">Privacy Policy</a></li>
+                        <li><a href="#terms">Terms of Use</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 MedSafi. Educational project for informational purposes only.</p>
+                <p>Powered by Teta Butera Nelly</p>
+            </div>
+        </div>
+    </footer>
 
     <script src="app.js"></script>
 </body>

@@ -618,7 +618,61 @@ document.addEventListener('keydown', (e) => {
 
 // Initialize
 loadRecentSearches();
+// Smooth scroll navigation
+document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetId = link.getAttribute('href');
+        const targetSection = document.querySelector(targetId);
+        
+        if (targetSection) {
+            targetSection.scrollIntoView({ behavior: 'smooth' });
+            
+            // Update active state
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            link.classList.add('active');
+            
+            // Close mobile menu
+            document.querySelector('.nav-menu').classList.remove('active');
+        }
+    });
+});
 
-console.log('MedGuard initialized successfully');
+// Mobile menu toggle
+const navToggle = document.getElementById('navToggle');
+const navMenu = document.querySelector('.nav-menu');
+
+if (navToggle) {
+    navToggle.addEventListener('click', () => {
+        navMenu.classList.toggle('active');
+    });
+}
+
+// Update active nav on scroll
+let scrollTimeout;
+window.addEventListener('scroll', () => {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+        const sections = document.querySelectorAll('section[id]');
+        const scrollY = window.pageYOffset;
+
+        sections.forEach(section => {
+            const sectionHeight = section.offsetHeight;
+            const sectionTop = section.offsetTop - 100;
+            const sectionId = section.getAttribute('id');
+
+            if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${sectionId}`) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+        });
+    }, 100);
+});
+
+console.log('MedSafi initialized successfully');
 console.log('FDA Drug Label API:', FDA_DRUG_LABEL_URL);
 console.log('FDA Adverse Events API:', FDA_ADVERSE_EVENTS_URL);
