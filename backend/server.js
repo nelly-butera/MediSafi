@@ -20,20 +20,19 @@ app.use(express.json());
 
 // Rate limiting
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 100,
   message: 'Too many requests from this IP, please try again later.'
 });
 app.use('/api/', limiter);
 
-// Simple in-memory cache to reduce API calls
+// Simple in-memory cache
 const cache = new Map();
 const CACHE_DURATION = 3600000; // 1 hour
 
-// OpenFDA API base URL
 const OPENFDA_BASE_URL = 'https://api.fda.gov';
 
-// Helper function to clean and extract drug data
+// Helper function to extract drug data
 function extractDrugData(result) {
   const openfda = result.openfda || {};
   const indications = result.indications_and_usage ? result.indications_and_usage[0] : '';
@@ -68,7 +67,7 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Search endpoint
+// Search endpoint - FIXED VERSION
 app.get('/api/search', async (req, res) => {
   try {
     const { query, limit = 10 } = req.query;
@@ -77,7 +76,6 @@ app.get('/api/search', async (req, res) => {
       return res.status(400).json({ error: 'Search query is required' });
     }
 
-    // Sanitize input
     const sanitizedQuery = query.trim().replace(/[^\w\s-]/gi, '');
     
     // Check cache
@@ -90,15 +88,19 @@ app.get('/api/search', async (req, res) => {
       }
     }
 
-    // Call OpenFDA API
+    // FIXED: Correct OpenFDA search syntax
+    // Use quotes for exact match OR wildcard for partial match
     const searchUrl = `${OPENFDA_BASE_URL}/drug/label.json`;
+    const searchQuery = `openfda.brand_name:"${sanitizedQuery}" openfda.generic_name:"${sanitizedQuery}"`;
+    
     const params = {
-      // New (Use Wildcard for better results):
-      search: `openfda.brand_name:${sanitizedQuery}* OR openfda.generic_name:${sanitizedQuery}*`,
-      limit: Math.min(parseInt(limit), 20) // Cap at 20
+      search: searchQuery,
+      limit: Math.min(parseInt(limit), 20)
     };
 
-    console.log('Searching OpenFDA:', sanitizedQuery);
+    console.log('Searching OpenFDA with query:', searchQuery);
+    console.log('Full URL:', `${searchUrl}?search=${encodeURIComponent(searchQuery)}&limit=${params.limit}`);
+    
     const response = await axios.get(searchUrl, { 
       params,
       timeout: 10000 
@@ -107,7 +109,7 @@ app.get('/api/search', async (req, res) => {
     if (!response.data.results || response.data.results.length === 0) {
       return res.status(404).json({ 
         error: 'No medications found',
-        message: `No results found for "${query}". Try a different search term.`
+        message: `No results found for "${query}". Try: aspirin, ibuprofen, metformin, or atorvastatin`
       });
     }
 
@@ -131,6 +133,7 @@ app.get('/api/search', async (req, res) => {
 
   } catch (error) {
     console.error('Search error:', error.message);
+    console.error('Error details:', error.response?.data || error);
     
     if (error.response?.status === 404) {
       return res.status(404).json({ 
@@ -148,7 +151,8 @@ app.get('/api/search', async (req, res) => {
 
     res.status(500).json({ 
       error: 'Internal server error',
-      message: 'An error occurred while searching. Please try again later.'
+      message: 'An error occurred while searching. Please try again later.',
+      debug: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });
@@ -171,7 +175,6 @@ app.get('/api/drug/:id', async (req, res) => {
       }
     }
 
-    // Call OpenFDA API
     const searchUrl = `${OPENFDA_BASE_URL}/drug/label.json`;
     const response = await axios.get(searchUrl, {
       params: {
@@ -207,7 +210,7 @@ app.get('/api/drug/:id', async (req, res) => {
   }
 });
 
-// Autocomplete endpoint for search suggestions
+// Autocomplete endpoint
 app.get('/api/autocomplete', async (req, res) => {
   try {
     const { query } = req.query;
@@ -228,9 +231,13 @@ app.get('/api/autocomplete', async (req, res) => {
     }
 
     const searchUrl = `${OPENFDA_BASE_URL}/drug/label.json`;
+    
+    // Use wildcard for autocomplete
+    const searchQuery = `openfda.brand_name:${sanitizedQuery}*`;
+    
     const response = await axios.get(searchUrl, {
       params: {
-        search: `openfda.brand_name:${sanitizedQuery}* OR openfda.generic_name:${sanitizedQuery}*`,
+        search: searchQuery,
         limit: 5
       },
       timeout: 5000
@@ -259,7 +266,7 @@ app.get('/api/autocomplete', async (req, res) => {
   }
 });
 
-// Clear cache endpoint (for maintenance)
+// Clear cache endpoint
 app.post('/api/cache/clear', (req, res) => {
   cache.clear();
   res.json({ message: 'Cache cleared successfully' });
@@ -284,6 +291,7 @@ app.listen(PORT, () => {
   console.log(`MedGuard API Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`Health check: http://localhost:${PORT}/api/health`);
+  console.log(`\nTry searching for: aspirin, ibuprofen, metformin, atorvastatin`);
 });
 
 module.exports = app;
