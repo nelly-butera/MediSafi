@@ -1,6 +1,6 @@
 # MedSafi - Medication Information Lookup
 
-**Demo Video**: [to be added]  
+**Demo Video**: (https://drive.google.com/drive/folders/1wuqYIF-glTWHnsh505NZ-8xW8ZSf1AKG?usp=sharing)  
 **Live Site**: (http://3.87.160.166/)
 
 A web application that provides easy access to FDA adverse event data, helping users make informed decisions about medications. Built with vanilla JavaScript and Node.js, deployed with load balancing.
